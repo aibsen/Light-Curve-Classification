@@ -5,10 +5,9 @@ import FATS as ft
 names_tags = np.loadtxt('SSS_Per_Var_Cat/SSS_Per_Tab.dat', skiprows=3, usecols= (0,7))
 names = np.array([str(int(name)) for name in names_tags[:,0]])
 Y = np.array([int(yi) for yi in names_tags[:,1]])
-print names.shape
+
 # getting features (X)
 number_of_features = 18
-X = np.empty((0,number_of_features), float)
 featureL=[
     # 'Amplitude', #IndexError
     'Autocor_length',
@@ -53,16 +52,19 @@ featureL=[
     # 'StetsonL', #depends on mag2, error2
     # 'VariabilityIndex' #not found
     ]
-a = ft.FeatureSpace(featureList=featureL)
+X = np.empty((0,number_of_features), float)
+
+fs = ft.FeatureSpace(featureList=featureL)
 i = 1
-for name in names[:15]: #I'm calculating only the first 15 xi, since it's just a test and I don't want to kill my pc
+trainning_set_length = 15
+for name in names[:trainning_set_length]: #I'm calculating only the first 15 xi, since it's just a test and I don't want to kill my pc
     print "calculating feature number "+str(i)+": "+name
     data = np.loadtxt('SSS_Per_Var_Cat/'+name+'.dat')
     data = data.transpose()
     preprocessed_data = ft.Preprocess_LC(data[0], data[1], data[2])
     [mag, time, error] = preprocessed_data.Preprocess()
     lc = np.array([mag, time, error])
-    a = a.calculateFeature(lc)
-    feature = a.result()
+    fs = fs.calculateFeature(lc)
+    feature = fs.result()
     X = np.append(X,np.array([feature]),axis=0)
     i+=1
