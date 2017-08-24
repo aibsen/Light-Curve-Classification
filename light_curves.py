@@ -54,7 +54,7 @@ def get_features(names, number_of_features, trainning_set_length):
     fs = ft.FeatureSpace(featureList=featureL)
     i = 1
     for name in names[:trainning_set_length]: #I'm calculating only the first 15 xi, since it's just a test and I don't want to kill my pc
-        # print "calculating features for x_"+str(i)+": "+name
+        print "calculating features for x_"+str(i)+": "+name
         data = np.loadtxt('SSS_Per_Var_Cat/'+name+'.dat')
         data = data.transpose()
         preprocessed_data = ft.Preprocess_LC(data[0], data[1], data[2])
@@ -67,10 +67,10 @@ def get_features(names, number_of_features, trainning_set_length):
 
     return X 
 
-def classify_SVM(X, Y, trainning_set_length):
+def train_SVM(X, Y, trainning_set_length):
     model = SVC(verbose=True)
     model.fit(X,Y[:trainning_set_length])
-    # print model
+    return model
 
 #load data
 names_tags = np.loadtxt('SSS_Per_Var_Cat/SSS_Per_Tab.dat', skiprows=3, usecols= (0,7))
@@ -79,7 +79,8 @@ Y = np.array([int(yi) for yi in names_tags[:,1]])
 number_of_features = 16
 trainning_set_length = 15
 X = get_features(names, number_of_features,trainning_set_length)
-classify_SVM(X,Y,trainning_set_length)
+model = train_SVM(X,Y,trainning_set_length)
 # print Y[:trainning_set_length].shape
 # print X.shape
 # print X
+print "hola"
