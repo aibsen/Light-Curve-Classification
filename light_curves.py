@@ -58,7 +58,7 @@ fs = ft.FeatureSpace(featureList=featureL)
 i = 1
 trainning_set_length = 15
 for name in names[:trainning_set_length]: #I'm calculating only the first 15 xi, since it's just a test and I don't want to kill my pc
-    print "calculating feature number "+str(i)+": "+name
+    print "calculating features for x_"+str(i)+": "+name
     data = np.loadtxt('SSS_Per_Var_Cat/'+name+'.dat')
     data = data.transpose()
     preprocessed_data = ft.Preprocess_LC(data[0], data[1], data[2])
