@@ -1,9 +1,10 @@
 import numpy as np
+import pandas as pd
 import FATS as ft
 from sklearn.svm import SVC
 from sklearn import datasets
 
-def get_features(names, number_of_features, trainning_set_length):
+def get_features(number_of_features, trainning_set_length):
     # getting features (X)
     featureL=[
         # 'Amplitude', #IndexError
@@ -50,37 +51,49 @@ def get_features(names, number_of_features, trainning_set_length):
         # 'VariabilityIndex' #not found
         ]
     X = np.empty((0,number_of_features), float)
+    Y = np.empty((0,0), float)
 
     fs = ft.FeatureSpace(featureList=featureL)
-    i = 1
-    for name in names[:trainning_set_length]: #I'm calculating only the first 15 xi, since it's just a test and I don't want to kill my pc
-        print "calculating features for x_"+str(i)+": "+name
-        data = np.loadtxt('SSS_Per_Var_Cat/'+name+'.dat')
-        data = data.transpose()
-        preprocessed_data = ft.Preprocess_LC(data[0], data[1], data[2])
+    filenameLC = "data/AllVar_cleaned.csv"
+    filenameY = "data/classes.csv"  # Directory of data for processing
+    data = pd.read_csv(filenameLC, sep=",", names=["id", "time", "mag", "error"])
+    classes = pd.read_csv(filenameY, sep=" ", names=["id", "tag"])
+    ids = data.id.unique()
+    number_of_objects = len(ids)
+
+    for id in ids[:trainning_set_length]: #I'm calculating only the first 15 xi, since it's just a test and I don't want to kill my pc
+        # print "calculating features for",id
+        data_i = data[data.id==id]
+        preprocessed_data = ft.Preprocess_LC(data_i['mag'].tolist(), data_i['time'].tolist(), data_i['error'].tolist())
         [mag, time, error] = preprocessed_data.Preprocess()
         lc = np.array([mag, time, error])
         fs = fs.calculateFeature(lc)
         feature = fs.result()
         X = np.append(X,np.array([feature]),axis=0)
-        i+=1
 
-    return X 
+        # class_i = classes[classes.id==id]
+        # print class_i
+        # Y = np.append(Y,class_i)
+
+    return [X,Y] 
+    
 
 def train_SVM(X, Y, trainning_set_length):
     model = SVC(verbose=True)
     model.fit(X,Y[:trainning_set_length])
     return model
 
-#load data
-names_tags = np.loadtxt('SSS_Per_Var_Cat/SSS_Per_Tab.dat', skiprows=3, usecols= (0,7))
-names = np.array([str(int(name)) for name in names_tags[:,0]])
-Y = np.array([int(yi) for yi in names_tags[:,1]])
-number_of_features = 16
-trainning_set_length = 15
-X = get_features(names, number_of_features,trainning_set_length)
-model = train_SVM(X,Y,trainning_set_length)
-# print Y[:trainning_set_length].shape
-# print X.shape
-# print X
-print "hola"
+if __name__ == "__main__":
+    #load data
+    number_of_features = 16
+    trainning_set_length = 15
+    [X,Y] = get_features(number_of_features,trainning_set_length)
+    np.save("features", X)
+    # print X.shape
+    # print Y.shape
+    # print Y
+    
+    # model = train_SVM(X,Y,trainning_set_length)
+    # print Y[:trainning_set_length].shape
+    # print X.shape
+    # print X
