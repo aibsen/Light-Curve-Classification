@@ -62,7 +62,7 @@ def get_features(number_of_features, trainning_set_length):
     number_of_objects = len(ids)
 
     for id in ids[:trainning_set_length]: #I'm calculating only the first 15 xi, since it's just a test and I don't want to kill my pc
-        # print "calculating features for",id
+        print "calculating features for",id
         data_i = data[data.id==id]
         preprocessed_data = ft.Preprocess_LC(data_i['mag'].tolist(), data_i['time'].tolist(), data_i['error'].tolist())
         [mag, time, error] = preprocessed_data.Preprocess()
@@ -71,10 +71,8 @@ def get_features(number_of_features, trainning_set_length):
         feature = fs.result()
         X = np.append(X,np.array([feature]),axis=0)
 
-        # class_i = classes[classes.id==id]
-        # print class_i
-        # Y = np.append(Y,class_i)
-
+        class_i = classes[classes.id==str(id)]
+        Y = np.append(Y,class_i.tag)
     return [X,Y] 
     
 
@@ -89,6 +87,7 @@ if __name__ == "__main__":
     trainning_set_length = 15
     [X,Y] = get_features(number_of_features,trainning_set_length)
     np.save("features", X)
+    np.save("classes",Y)
     # print X.shape
     # print Y.shape
     # print Y
