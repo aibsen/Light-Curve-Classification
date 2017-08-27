@@ -41,9 +41,10 @@ def calculate_feature_data(lc_ids, feature_list):
         feature_space = feature_space.calculateFeature(lc_data)
         
         # using the dict option and looping over feature_list since the results are not sorted if using the Data=... option
-        fs_result = feature_space.result("dict")
-        for i_feat, feat in enumerate(feature_list):
-            feature_data_nparray[i,i_feat] = fs_result[feat]
+        fs_result = feature_space.result("array")
+        feature_list = feature_space.result("features")
+        # for i_feat, feat in enumerate(feature_list):
+        #     feature_data_nparray[i,i_feat] = fs_result[feat]
         # feature_data_nparray[i,:] =  np.array(feature_space.result())
     
     return feature_data_nparray, feature_list
