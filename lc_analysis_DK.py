@@ -63,8 +63,21 @@ def fix_feature_data(feature_data, feature_list):
 
 if __name__ == "__main__":
     print("Start Light Curve Analysis")
-    data_dir = "./../Data/SSS_Per_Var_Cat"  # Directory of data for processing
+    data_dir = "./../Data"  # Directory of data for processing
+
+    # Initialize light curve data
+    lightcurve_classes_filename = os.path.join(data_dir, "classes.csv")
+    lightcurve_timeseries_filename = os.path.join(data_dir, "AllVar_cleaned.csv")
+
+    lg_classes = pd.read_csv(lightcurve_classes_filename, header=0, delimiter=" ")
+    lg_timeseries = pd.read_csv(lightcurve_timeseries_filename, names=["Numerical_ID", "Time", "Magnitude", "Error"], delimiter=",")
+    print(lg_classes)
+    print(lg_timeseries)
     
+    quit()
+    
+    data_dir = "./../Data/SSS_Per_Var_Cat"  # Directory of data for processing
+
     # Initialize light curve metadata
     lightcurve_metadata_filename = os.path.join(data_dir, "SSS_Per_Tab.dat")
     lc_metadata = np.loadtxt(lightcurve_metadata_filename, skiprows=3, usecols=(0,7))
@@ -120,10 +133,10 @@ if __name__ == "__main__":
 
     lc_ids = lc_ids[:training_set_length]
     lc_types = lc_types[:training_set_length]
-
+    
     feature_data_nparray, feature_list = calculate_feature_data(lc_ids, feature_list)
     feature_data_nparray, feature_list = fix_feature_data(feature_data_nparray, feature_list)
-
+    
     print("lc_types.shape: " + str(lc_types.shape))
     print("feature_data_nparray:")
     print(feature_data_nparray)
