@@ -7,7 +7,38 @@ import warnings
 from sklearn.svm import SVC
 from sklearn import datasets
 
-warnings.filterwarnings("ignore")  # temporariy used to ignore the runtime warnings that pop up from FATS
+warnings.filterwarnings("ignore")  # temporarily used to ignore the runtime warnings that pop up from FATS
+
+
+def preprocess_lc_data_part1():
+    data_dir = "./../Data"  # Directory of data for processing
+    data_dir = "D:\\Files\\VC\\LSDSS\\2017_Program\\Project\\Data"
+    # Initialize light curve data
+    lightcurve_classes_filename = os.path.join(data_dir, "classes.csv")
+    lightcurve_timeseries_filename = os.path.join(data_dir, "AllVar_cleaned.csv")
+
+    lc_classes = pd.read_csv(lightcurve_classes_filename, header=0, delimiter=" ")
+    lc_timeseries = pd.read_csv(lightcurve_timeseries_filename, names=["Numerical_ID", "Time", "Magnitude", "Error"], delimiter=",")
+    print(lc_classes)
+    print(lc_timeseries)
+
+    # Get unique Numerical_IDs from time series data to trim extra IDs from the classes data
+    lc_uids = np.unique(lc_timeseries["Numerical_ID"])
+    lc_classes_trimmed = lc_classes[lc_classes["Numerical_ID"].isin(lc_uids)]
+
+    # Keep only classes that have greater than 500 samples
+    lc_ct_types_unique, lc_ct_types_counts = np.unique(lc_classes_trimmed["Var_Type"], return_counts=True)
+    lc_ct_utypes_drop = lc_ct_types_unique[lc_ct_types_counts < 500]
+    lc_classes_trimmed = lc_classes_trimmed[~lc_classes_trimmed["Var_Type"].isin(lc_ct_utypes_drop)]
+    print(lc_classes_trimmed)
+    # Trim IDs from the time series data using lc_classes_trimmed
+    lc_timeseries_trimmed = lc_timeseries[lc_timeseries["Numerical_ID"].isin(lc_classes_trimmed["Numerical_ID"])]
+
+    # Save csv files
+    lc_classes_newfn = os.path.join(data_dir, "classes_trimmed.csv")
+    lc_timeseries_newfn = os.path.join(data_dir, "AllVar_cleaned_trimmed.csv")
+    lc_classes_trimmed.to_csv(lc_classes_newfn, sep=" ", index=False, mode='wb', encoding='utf8')
+    lc_timeseries_trimmed.to_csv(lc_timeseries_newfn, index=False, mode='wb', encoding='utf8')
 
 def calculate_feature_data(lc_ids, feature_list):
     # check for when feature_list == "all"
@@ -16,7 +47,7 @@ def calculate_feature_data(lc_ids, feature_list):
         feature_space = ft.FeatureSpace(featureList=feature_list)
     else:
         # otherwise create features from only magnitude, time, and error
-        # needed to fix indexing errors in FeatureFunctionLib.py and lomb.py before this started working
+        # Needed to apply fixes to FATS before this starts working
         feature_space = ft.FeatureSpace(Data=["magnitude", "time", "error"])
         feature_list = feature_space.featureList
     
@@ -63,17 +94,6 @@ def fix_feature_data(feature_data, feature_list):
 
 if __name__ == "__main__":
     print("Start Light Curve Analysis")
-    data_dir = "./../Data"  # Directory of data for processing
-
-    # Initialize light curve data
-    lightcurve_classes_filename = os.path.join(data_dir, "classes.csv")
-    lightcurve_timeseries_filename = os.path.join(data_dir, "AllVar_cleaned.csv")
-
-    lg_classes = pd.read_csv(lightcurve_classes_filename, header=0, delimiter=" ")
-    lg_timeseries = pd.read_csv(lightcurve_timeseries_filename, names=["Numerical_ID", "Time", "Magnitude", "Error"], delimiter=",")
-    print(lg_classes)
-    print(lg_timeseries)
-    
     quit()
     
     data_dir = "./../Data/SSS_Per_Var_Cat"  # Directory of data for processing
