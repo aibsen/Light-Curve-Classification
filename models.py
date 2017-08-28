@@ -6,6 +6,8 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn import metrics
 from sklearn import preprocessing
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import cross_val_score
+
 
 def load_data(filename):
     #reading data from csv
@@ -54,8 +56,6 @@ def train_SVM(Xtrain, Ytrain, Xtest, Ytest):
     #check how prediction went
     # print(metrics.classification_report(Ytest, predicted))
     # print(metrics.confusion_matrix(expected, predicted))
-    print "score",model.score(Xtest, Ytest)
-    
 
 def train_DecisionTree(Xtrain, Ytrain, Xtest, Ytest):
     model = DecisionTreeClassifier()
@@ -66,8 +66,8 @@ def train_DecisionTree(Xtrain, Ytrain, Xtest, Ytest):
     #check how prediction went
     # print(metrics.classification_report(Ytest, predicted))
     # print(metrics.confusion_matrix(expected, predicted))
-    print "score",model.score(Xtest, Ytest)
-    
+    get_model_score(model, Xtrain, Ytrain, Xtest, Ytest)
+
 
 def train_RandomForest(Xtrain, Ytrain, Xtest, Ytest):
     model = RandomForestClassifier()
@@ -78,18 +78,24 @@ def train_RandomForest(Xtrain, Ytrain, Xtest, Ytest):
     #check how prediction went
     # print(metrics.classification_report(Ytest, predicted))
     # print(metrics.confusion_matrix(expected, predicted))
+    get_model_score(model, Xtrain, Ytrain, Xtest, Ytest)
+
+def get_model_score(model, Xtrain, Ytrain, Xtest, Ytest):
     print "score",model.score(Xtest, Ytest)
-    # print model.score()
+    cv_scores = cross_val_score(model, Xtrain, Ytrain, cv=5)
+    print"cross validating"
+    print"Mean Score:\t\t", np.mean(cv_scores)
+    print"Standard Deviation:\t", np.std(cv_scores)
 
 if __name__ == "__main__":
     print("LOADING DATA")
     filename = "data/Features.csv" 
     X, Y, data = load_data(filename)
     Xtrain, Xtest, Ytrain, Ytest = split_datasets(X,Y)
-    print("SVM CLASSIFIER")
-    train_SVM(Xtrain, Ytrain, Xtest, Ytest)
+    # print("SVM CLASSIFIER")
+    # train_SVM(Xtrain, Ytrain, Xtest, Ytest)
     # print("DECISION TREE CLASSIFIER")
     # train_DecisionTree(Xtrain, Ytrain, Xtest, Ytest)
-    # print("RANDOM FOREST CLASSIFIER")
-    # train_RandomForest(Xtrain, Ytrain, Xtest, Ytest)
+    print("RANDOM FOREST CLASSIFIER")
+    train_RandomForest(Xtrain, Ytrain, Xtest, Ytest)
     print("done")
