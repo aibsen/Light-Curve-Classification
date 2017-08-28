@@ -15,6 +15,9 @@ def load_data(filename):
     class_list = Y.unique()
     number_of_classes = len(class_list)
     print "there are", number_of_classes,"classes :",class_list
+    return X,Y,data
+
+def split_datasets(X,Y):
     #converting data to numpy arrays, so we can split dataset
     Xnp = X.as_matrix()
     #normalize X
@@ -27,7 +30,9 @@ def load_data(filename):
     size_of_test = X_test.shape
     print "size of trainning data set:",size_of_trainning[0]
     print "size of test data set:",size_of_test[0]
+    return X_train, X_test, y_train, y_test
 
+def check_balance(y_train, y_test):
     #checking that sets are balanced
     Ytrain_pd = pd.DataFrame({"id":y_train})
     Ytest_pd = pd.DataFrame({"id":y_test})
@@ -37,8 +42,7 @@ def load_data(filename):
         part_of_test = float(len(Ytest_pd[Ytest_pd.id==tag].index))/float(len(Ytest_pd.index))
         print("%.3f of trainning data"% part_of_trainning)
         print("%.3f of test data"% part_of_test)
-    
-    return X_train, X_test, y_train, y_test
+
 
 def train_SVM(Xtrain, Ytrain, Xtest, Ytest):
     model = SVC()
@@ -63,7 +67,8 @@ def train_DecisionTree(Xtrain, Ytrain, Xtest, Ytest):
 if __name__ == "__main__":
     print("LOADING DATA")
     filename = "data/Features.csv" 
-    Xtrain, Xtest, Ytrain, Ytest = load_data(filename)
+    X, Y, data = load_data(filename)
+    Xtrain, Xtest, Ytrain, Ytest = split_datasets(X,Y)
     # print("SVM CLASSIFIER")
     # train_SVM(Xtrain, Ytrain, Xtest, Ytest)
     print("DECISION TREE CLASSIFIER")
