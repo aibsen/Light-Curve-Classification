@@ -5,6 +5,7 @@ from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 from sklearn import metrics
 from sklearn import preprocessing
+from sklearn.ensemble import RandomForestClassifier
 
 def load_data(filename):
     #reading data from csv
@@ -51,8 +52,10 @@ def train_SVM(Xtrain, Ytrain, Xtest, Ytest):
     print("testing SVM")
     predicted = model.predict(Xtest)
     #check how prediction went
-    print(metrics.classification_report(Ytest, predicted))
+    # print(metrics.classification_report(Ytest, predicted))
     # print(metrics.confusion_matrix(expected, predicted))
+    print "score",model.score(Xtest, Ytest)
+    
 
 def train_DecisionTree(Xtrain, Ytrain, Xtest, Ytest):
     model = DecisionTreeClassifier()
@@ -61,16 +64,32 @@ def train_DecisionTree(Xtrain, Ytrain, Xtest, Ytest):
     print("testing Desicion Tree Classifier")
     predicted = model.predict(Xtest)
     #check how prediction went
-    print(metrics.classification_report(Ytest, predicted))
+    # print(metrics.classification_report(Ytest, predicted))
     # print(metrics.confusion_matrix(expected, predicted))
+    print "score",model.score(Xtest, Ytest)
+    
+
+def train_RandomForest(Xtrain, Ytrain, Xtest, Ytest):
+    model = RandomForestClassifier()
+    print("training Random Forest Classifier")
+    model.fit(Xtrain, Ytrain)
+    print("testing Random Forest Classifier")
+    predicted = model.predict(Xtest)
+    #check how prediction went
+    # print(metrics.classification_report(Ytest, predicted))
+    # print(metrics.confusion_matrix(expected, predicted))
+    print "score",model.score(Xtest, Ytest)
+    # print model.score()
 
 if __name__ == "__main__":
     print("LOADING DATA")
     filename = "data/Features.csv" 
     X, Y, data = load_data(filename)
     Xtrain, Xtest, Ytrain, Ytest = split_datasets(X,Y)
-    # print("SVM CLASSIFIER")
-    # train_SVM(Xtrain, Ytrain, Xtest, Ytest)
-    print("DECISION TREE CLASSIFIER")
-    train_DecisionTree(Xtrain, Ytrain, Xtest, Ytest)
+    print("SVM CLASSIFIER")
+    train_SVM(Xtrain, Ytrain, Xtest, Ytest)
+    # print("DECISION TREE CLASSIFIER")
+    # train_DecisionTree(Xtrain, Ytrain, Xtest, Ytest)
+    # print("RANDOM FOREST CLASSIFIER")
+    # train_RandomForest(Xtrain, Ytrain, Xtest, Ytest)
     print("done")
