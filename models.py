@@ -11,40 +11,39 @@ from sklearn.model_selection import cross_val_score
 from sklearn.externals import joblib
 
 
-def load_data(filename):
+def load_data(filename, feature_list):
     #reading data from csv
-    data = pd.read_csv(filename, sep=",", names=["id", "amplitude", "beyond1std", "pairslopetrend","y"], skiprows=1)
+    data = pd.read_csv(filename, sep=",")
+    feature_list.append("Var_Type")
+    data = data[feature_list]
     #taking out class 13 and class 6, because objects are too few
-    data = data[data.y != 13]
-    data = data[data.y != 6]
-    X = data[["id","amplitude", "beyond1std", "pairslopetrend"]]
-    Y = data["y"] 
-    #how many classes?
-    class_list = Y.unique()
-    number_of_classes = len(class_list)
-    print "there are", number_of_classes,"classes :",class_list
+    data = data[data.Var_Type != 13]
+    data = data[data.Var_Type != 6]
+    fllen=len(feature_list)-1
+    feature_list = feature_list[0:fllen]
+    X = data[feature_list]
+    Y = data["Var_Type"] 
     return X,Y,data
     
 
-def load_data_two_classes(filename):
-    data = pd.read_csv(filename, sep=",", names=["id", "amplitude", "beyond1std", "pairslopetrend","y"], skiprows=1)
-    # which classes have the most objects?
-    # class_list = data["y"].unique()
-    # class_len = []
-    # for c in class_list:
-    #     sample = data[data.y == c]
-    #     class_len.append(len(sample.index))
-    # print class_list
-    # print class_len
-    data_5 = data[data.y == 5]
-    l = len(data_5.index)
-    data_1 = data[data.y == 1]
-    data_1 = data_1.head(l)
-    dataframes= [data_1,data_5]
-    sliced_data = data_1.append(data_5)
+def load_data_two_classes(filename, c1, c2, feature_list):
+    data = pd.read_csv(filename, sep=",")
+    feature_list.append("Var_Type")
+    data = data[feature_list]
+    data_1 = data[data.Var_Type == c1]
+    data_2 = data[data.Var_Type == c2]
+    l1 = len(data_1.index)
+    l2 = len(data_2.index)
+    if(l1 > l2):
+        data_1 = data_1.head(l2)
+    elif(l1 < l2):
+        data_2 = data_2.head(l1)
+    sliced_data = data_1.append(data_2)
     # print sliced_data
-    X = sliced_data[["id","amplitude", "beyond1std", "pairslopetrend"]]
-    Y = sliced_data["y"]
+    fllen=len(feature_list)-1
+    feature_list = feature_list[0:fllen]
+    X = sliced_data[feature_list]
+    Y = sliced_data["Var_Type"]
     return X,Y,sliced_data
 
 def split_datasets(X,Y):
@@ -74,17 +73,20 @@ def check_balance(y_train, y_test):
         print("%.3f of test data"% part_of_test)
 
 
-def train_SVM(Xtrain, Ytrain, Xtest, Ytest):
+def train_SVM(Xtrain, Ytrain, Xtest, Ytest, filename):
     model = SVC()
     print("training SVM")
     model.fit(Xtrain, Ytrain)
     print("testing SVM")
     predicted = model.predict(Xtest)
+    filepkl = filename+".pkl"
+    filetxt = filename+".txt"
+    joblib.dump(model,filepkl)
     #check how prediction went
     # print(metrics.confusion_matrix(expected, predicted))
-    # get_model_score(model, Xtrain, Ytrain, Xtest, Ytest)
+    get_model_score(model, Xtrain, Ytrain, Xtest, Ytest, predicted, filetxt)
 
-def train_DecisionTree(Xtrain, Ytrain, Xtest, Ytest):
+def train_DecisionTree(Xtrain, Ytrain, Xtest, Ytest, filename):
     model = DecisionTreeClassifier()
     print("training Desicion Tree Classifier")
     model.fit(Xtrain, Ytrain)
@@ -94,9 +96,13 @@ def train_DecisionTree(Xtrain, Ytrain, Xtest, Ytest):
     # print(metrics.classification_report(Ytest, predicted))
     # print(metrics.confusion_matrix(expected, predicted))
     # get_model_score(model, Xtrain, Ytrain, Xtest, Ytest)
+    filepkl = filename+".pkl"
+    filetxt = filename+".txt"
+    joblib.dump(model,filepkl)
+    get_model_score(model, Xtrain, Ytrain, Xtest, Ytest, predicted, filetxt)
 
 
-def train_RandomForest(Xtrain, Ytrain, Xtest, Ytest):
+def train_RandomForest(Xtrain, Ytrain, Xtest, Ytest, filename):
     model = RandomForestClassifier()
     print("training Random Forest Classifier")
     model.fit(Xtrain, Ytrain)
@@ -104,13 +110,15 @@ def train_RandomForest(Xtrain, Ytrain, Xtest, Ytest):
     predicted = model.predict(Xtest)
     #check how prediction went
     # print(metrics.confusion_matrix(expected, predicted))
-    joblib.dump(model,"results/RF_1_5.pkl")
-    get_model_score(model, Xtrain, Ytrain, Xtest, Ytest, predicted)
+    filepkl = filename+".pkl"
+    filetxt = filename+".txt"
+    joblib.dump(model,filepkl)
+    get_model_score(model, Xtrain, Ytrain, Xtest, Ytest, predicted, filetxt)
 
-def get_model_score(model, Xtrain, Ytrain, Xtest, Ytest, predicted):
+def get_model_score(model, Xtrain, Ytrain, Xtest, Ytest, predicted, filename):
     print"cross validating"
     cv_scores = cross_val_score(model, Xtrain, Ytrain, cv=5)
-    with open("data/results_RF_1_5.txt","w") as file:
+    with open(filename,"w") as file:
         report = metrics.classification_report(Ytest, predicted)
         mean_score = np.mean(cv_scores)
         std = np.std(cv_scores)
@@ -125,17 +133,16 @@ def get_model_score(model, Xtrain, Ytrain, Xtest, Ytest, predicted):
 
 if __name__ == "__main__":
     print("LOADING DATA")
-    filename = "data/Features.csv" 
-    X, Y, data = load_data_two_classes(filename)
-    # print data.head()
-    print len(data[data.y==1].index)
-    print len(data[data.y==5].index)
-    # X, Y, data = load_data(filename)
+    filename = "data/Features_many_sorted.csv" 
+    feature_list =["Autocor_length", "AndersonDarling"]
+    # X, Y, data = load_data_two_classes(filename, 1, 2, feature_list)
+    X, Y, data = load_data(filename, feature_list)
     Xtrain, Xtest, Ytrain, Ytest = split_datasets(X,Y)
     # print("SVM CLASSIFIER")
-    # train_SVM(Xtrain, Ytrain, Xtest, Ytest)
-    print("DECISION TREE CLASSIFIER")
-    train_DecisionTree(Xtrain, Ytrain, Xtest, Ytest)
+    results_filename = "results/DT_1_2_5_4_8" 
+    # train_SVM(Xtrain, Ytrain, Xtest, Ytest, results_filename)
+    # print("DECISION TREE CLASSIFIER")
+    train_DecisionTree(Xtrain, Ytrain, Xtest, Ytest, results_filename)
     # print("RANDOM FOREST CLASSIFIER")
-    # train_RandomForest(Xtrain, Ytrain, Xtest, Ytest)
+    # train_RandomForest(Xtrain, Ytrain, Xtest, Ytest, results_filename)
     print("done")
